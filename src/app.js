@@ -4,23 +4,68 @@ const user = require("./models/user");
 const User = require("./models/user");
 // const { adminAuth, userAuth } = require("./middlewares/auth");
 const app = express();
+app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const user = new User({
-    firstName: "Sans",
-    lastName: "Shaw",
-    emailId: "sans@gmail.com",
-    password: "sans@123",
-    age: "27",
-    gender: "Female",
-    phoneNumber: "9874563211",
-  });
+  const user = new User(req.body);
 
   try {
     await user.save();
     res.send("Data saved successfully");
   } catch (err) {
     res.status(400).send("User cannot be saved");
+  }
+});
+
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.emailId;
+  try {
+    // const users = await User.find({ emailId: userEmail });
+    // if (users.length === 0) {
+    //   res.status(404).send("User not found");
+    // }
+
+    const user = await User.findOne({ emailId: userEmail });
+    if (!user) {
+      res.status(404).send("User not found");
+    }
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+app.get("/feed", async (req, res) => {
+  try {
+    const user = await User.find({});
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    await User.findByIdAndDelete(userId);
+    res.send("User deleted ");
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+
+  try {
+    await User.findOneAndUpdate({ _id: userId }, data);
+    // By Email
+    // await User.findOneAndUpdate({ emailId: userId }, data);
+
+    res.send("User data updated ");
+  } catch (err) {
+    res.status(400).send("Something went wrong");
   }
 });
 
