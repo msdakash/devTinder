@@ -55,22 +55,37 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params.userId;
   const data = req.body;
 
   try {
-    // await User.findOneAndUpdate({ _id: userId }, data, {
-    //   // runvalidators: true,
-    // });
-    // By Email
-    await User.findOneAndUpdate({ emailId: userId }, data, {
-      runValidators: true,
+    const ALLOWED_UPDATES = ["age", "skills", "about"];
+
+    const isUpdateAllowed = Object.keys(data).every((key) =>
+      ALLOWED_UPDATES.includes(key)
+    );
+
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed");
+    }
+
+    if (data.skills.length > 10) {
+      throw new Error("Max 10 skills allowed");
+    }
+
+    await User.findOneAndUpdate({ _id: userId }, data, {
+      runvalidators: true,
     });
+
+    // By Email
+    // await User.findOneAndUpdate({ emailId: userId }, data, {
+    //   runValidators: true,
+    // });
 
     res.send("User data updated ");
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).send(err.message);
   }
 });
 
