@@ -13,6 +13,7 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send("Data saved successfully");
   } catch (err) {
+    console.log(err);
     res.status(400).send("User cannot be saved");
   }
 });
@@ -59,13 +60,17 @@ app.patch("/user", async (req, res) => {
   const data = req.body;
 
   try {
-    await User.findOneAndUpdate({ _id: userId }, data);
+    // await User.findOneAndUpdate({ _id: userId }, data, {
+    //   // runvalidators: true,
+    // });
     // By Email
-    // await User.findOneAndUpdate({ emailId: userId }, data);
+    await User.findOneAndUpdate({ emailId: userId }, data, {
+      runValidators: true,
+    });
 
     res.send("User data updated ");
   } catch (err) {
-    res.status(400).send("Something went wrong");
+    res.status(400).send(err);
   }
 });
 
