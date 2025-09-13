@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const userSchema = mongoose.Schema(
   {
@@ -11,6 +13,7 @@ const userSchema = mongoose.Schema(
     },
     lastName: {
       type: String,
+      requred: true,
     },
     emailId: {
       type: String,
@@ -74,6 +77,24 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+//  Dont create arrow function for it , because of 'this'
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign({ _id: user._id }, "DEV@TINDER$790", {
+    expiresIn: "1d",
+  });
+
+  return token;
+};
+
+userSchema.methods.validatePassword = async function (password) {
+  const user = this;
+  const passwordHash = user.password;
+  const isPasswordValid = await bcrypt.compare(password, passwordHash);
+
+  return isPasswordValid;
+};
 
 const User = mongoose.model("User", userSchema);
 
